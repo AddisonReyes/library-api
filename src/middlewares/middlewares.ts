@@ -1,8 +1,4 @@
-import express, {
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import express, { NextFunction, Response, Request } from "express";
 
 const middlewares = express.Router();
 

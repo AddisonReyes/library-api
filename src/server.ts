@@ -1,21 +1,14 @@
-import dotenv from "dotenv";
-import express, {
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
-
+import express, { NextFunction, Response, Request } from "express";
 import middlewares from "./middlewares/middlewares.js";
-import authorRoutes from "./routes/authorRoutes.js";
+import authorsRoutes from "./routes/authors.js";
+import booksRoutes from "./routes/books.js";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
 
 dotenv.config();
 const app = express();
 
-let port: number = 3000;
-if (process.env.PORT) {
-  port = +process.env.PORT;
-}
+let port = process.env.PORT || 3000;
 
 // Settings
 mongoose.connect("mongodb://localhost:27017/library-db");
@@ -24,8 +17,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // Setup routes
-app.use("/api", authorRoutes);
-app.use("/api", authorRoutes);
+app.use("/api", authorsRoutes);
+app.use("/api", booksRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from the server!");
