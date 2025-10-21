@@ -65,3 +65,12 @@ and express backend will be runnning on: [http://localhost:3000](http://localhos
 
 - PUT /api/loans/:id/return - Register return
 - GET /api/loans/active - List active loans
+
+## Stack
+
+- TypeScript
+- Express.js
+- Mongoose
+- MongoDB
+- Node.js
+- Docker
