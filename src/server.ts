@@ -1,9 +1,11 @@
 import express, { NextFunction, Response, Request } from "express";
 import middlewares from "./middlewares/middlewares.js";
-import authorsRoutes from "./routes/authors.js";
-import booksRoutes from "./routes/books.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+
+import authorsRoutes from "./routes/authors.js";
+import booksRoutes from "./routes/books.js";
+import loansRoutes from "./routes/loans.js";
 
 dotenv.config();
 const app = express();
@@ -19,6 +21,7 @@ app.use(express.json());
 // Setup routes
 app.use("/api", authorsRoutes);
 app.use("/api", booksRoutes);
+app.use("/api", loansRoutes);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from the server!");

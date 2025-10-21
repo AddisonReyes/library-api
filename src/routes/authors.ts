@@ -5,7 +5,7 @@ const router = express.Router();
 const url: string = "/authors";
 
 // POST /api/authors -Create an author
-router.post("/authors", async (req: Request, res: Response) => {
+router.post(url, async (req: Request, res: Response) => {
   try {
     const author = new Author(req.body);
     await author.save();
