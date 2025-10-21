@@ -32,10 +32,8 @@ router.put(url + "/:id/return", async (req: Request, res: Response) => {
       return;
     }
 
-    await Loan.updateOne(
-      { _id: id },
-      { returned: true, returnDate: today, quantity: book.quantity + 1 }
-    );
+    await Book.updateOne({ _id: book._id }, { quantity: book.quantity + 1 });
+    await Loan.updateOne({ _id: id }, { returned: true, returnDate: today });
     res.status(200).send({ message: "200 - Ok", status: 200 });
   } catch (error) {
     res.status(400).json({ message: error, status: 400 });
@@ -51,25 +49,24 @@ router.post(url, async (req: Request, res: Response, next: NextFunction) => {
     if (!book) {
       res.status(404).json({
         message:
-          "We do not have this book at the moment, please try again later.",
+          "We don't have this book at the moment, please try again later.",
         status: 404,
       });
       return;
-    } else {
-      let { quantity } = book;
-      if (quantity <= 0) {
-        res.status(404).json({
-          message:
-            "We do not have this book at the moment, please try again later.",
-          status: 404,
-        });
-        return;
-      }
-
-      quantity -= 1;
-      await Book.updateOne({ _id: bookId }, { quantity: quantity });
     }
 
+    let { quantity } = book;
+    if (quantity <= 0) {
+      res.status(404).json({
+        message:
+          "We don't have this book at the moment, please try again later.",
+        status: 404,
+      });
+      return;
+    }
+
+    quantity -= 1;
+    await Book.updateOne({ _id: bookId }, { quantity: quantity });
     const loan = new Loan(req.body);
     await loan.save();
 
