@@ -1,6 +1,5 @@
 import express, { Response, Request } from "express";
 import Book from "../models/book.js";
-import mongoose from "mongoose";
 
 const router = express.Router();
 const url: string = "/books";

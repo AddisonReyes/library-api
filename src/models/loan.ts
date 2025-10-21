@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface ILoan extends Document {
+export interface ILoan extends Document {
   bookId: mongoose.Types.ObjectId;
   username: string;
   loanDate: Date;
