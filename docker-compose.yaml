@@ -1,0 +1,31 @@
+services:
+  mongodb:
+    image: mongo:7.0.25
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 123456
+
+  backend:
+    build: .
+    container_name: backend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+    environment:
+      MONGO_URL_PROD: mongodb://admin:123456@mongodb:27017/library-db?authSource=admin&retryWrites=true&w=majority
+      BACKEND_PORT: 3000
+      NODE_ENV: prod
+    command: npm run start
+
+volumes:
+  mongo-data:

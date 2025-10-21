@@ -10,10 +10,18 @@ import loansRoutes from "./routes/loans.js";
 dotenv.config();
 const app = express();
 
-let port = process.env.PORT || 3000;
+const env: string | undefined = process.env.NODE_ENV || "dev";
+let port: string | undefined = process.env.PORT || "3000";
+
+const connectionString: string | undefined =
+  env === "prod" ? process.env.MONGO_URL_PROD : process.env.MONGO_URL_DEV;
+
+console.log(env, ": ", connectionString);
 
 // Settings
-mongoose.connect("mongodb://localhost:27017/library-db");
+if (connectionString) {
+  mongoose.connect(connectionString);
+}
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
