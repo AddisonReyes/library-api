@@ -58,8 +58,16 @@ router.get(url + "/:id", async (req: Request, res: Response) => {
 
 // GET /api/books - List all books
 router.get(url, async (req: Request, res: Response) => {
-  const books = await Book.find();
-  res.status(200).send(books);
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+
+  const books = await Book.find().skip(skip).limit(limit);
+  const total = await Book.countDocuments();
+
+  res
+    .status(200)
+    .json({ books, page, totalPages: Math.ceil(total / limit), total });
 });
 
 // PUT /api/books/:id - Update a book
