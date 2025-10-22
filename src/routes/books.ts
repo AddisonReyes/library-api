@@ -56,7 +56,7 @@ router.get(url + "/:id", async (req: Request, res: Response) => {
   }
 });
 
-// GET /api/books - List all books (with pagination)
+// GET /api/books - List all books
 router.get(url, async (req: Request, res: Response) => {
   const books = await Book.find();
   res.status(200).send(books);
