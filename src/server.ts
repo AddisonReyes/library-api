@@ -16,8 +16,6 @@ let port: string | undefined = process.env.PORT || "3000";
 const connectionString: string | undefined =
   env === "prod" ? process.env.MONGO_URL_PROD : process.env.MONGO_URL_DEV;
 
-console.log(env, ": ", connectionString);
-
 // Settings
 if (connectionString) {
   mongoose.connect(connectionString);

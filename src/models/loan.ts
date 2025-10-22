@@ -9,9 +9,9 @@ export interface ILoan extends Document {
 }
 
 const LoanSchema: Schema = new Schema({
-  bookId: { type: mongoose.Types.ObjectId, require: true },
-  username: { type: String, require: true },
-  loanDate: { type: Date, require: true },
+  bookId: { type: mongoose.Types.ObjectId, required: true },
+  username: { type: String, required: true },
+  loanDate: { type: Date, required: true },
   returnDate: { type: Date },
   returned: { type: Boolean },
 });

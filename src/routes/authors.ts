@@ -1,5 +1,6 @@
-import express, { NextFunction, Response, Request } from "express";
+import express, { Response, Request } from "express";
 import Author from "../models/author.js";
+import { Types } from "mongoose";
 
 const router = express.Router();
 const url: string = "/authors";
@@ -11,14 +12,31 @@ router.post(url, async (req: Request, res: Response) => {
     await author.save();
     res.status(201).send(author);
   } catch (error) {
-    res.status(400).json({ message: error, status: 400 });
+    const errorMessage = (error as unknown as Error).message;
+    res.status(400).json({
+      message: "Error creating the author",
+      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+    });
   }
 });
 
 // GET /api/authors/:id - Get a specific author
 router.get(url + "/:id", async (req: Request, res: Response) => {
-  const author = await Author.findById(req.params.id);
-  res.status(200).send(author);
+  const { id } = req.params;
+  if (!Types.ObjectId.isValid(id!)) {
+    return res.status(400).json({ message: "ID inválido" });
+  }
+
+  try {
+    const author = await Author.findById(id);
+    res.status(200).send(author);
+  } catch (error) {
+    const errorMessage = (error as unknown as Error).message;
+    res.status(400).json({
+      message: "Error finding the author",
+      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+    });
+  }
 });
 
 // GET /api/authors - List all the authors
@@ -30,22 +48,38 @@ router.get(url, async (req: Request, res: Response) => {
 // PUT /api/authors/:id - Update an author
 router.put(url + "/:id", async (req: Request, res: Response) => {
   try {
-    await Author.updateOne({ _id: req.params.id }, req.body);
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id!)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    await Author.updateOne({ _id: id }, req.body);
     res.status(200).send({ message: "200 - Ok", status: 200 });
   } catch (error) {
-    res.status(400).json({ message: error, status: 400 });
+    const errorMessage = (error as unknown as Error).message;
+    res.status(400).json({
+      message: "Error updating the author",
+      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+    });
   }
 });
 
 // DELETE /api/authors/:id - Delete an author
 router.delete(url + "/:id", async (req: Request, res: Response) => {
   try {
-    await Author.deleteOne({ _id: req.params.id });
-    res
-      .status(204)
-      .send({ message: "204 - Deleted successfully", status: 204 });
+    const { id } = req.params;
+    if (!Types.ObjectId.isValid(id!)) {
+      return res.status(400).json({ message: "ID inválido" });
+    }
+
+    await Author.deleteOne({ _id: id });
+    res.status(204).send();
   } catch (error) {
-    res.status(400).json({ message: error, status: 400 });
+    const errorMessage = (error as unknown as Error).message;
+    res.status(400).json({
+      message: "Error deleting the author",
+      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+    });
   }
 });
 

@@ -38,7 +38,7 @@ and express backend will be runnning on: [http://localhost:3000](http://localhos
         {
             "title": "How to use this awesome api",
             "isbn": "978-1-80056-252-3",
-            "autorId": "68f794cdddb78d8147b12b5a",
+            "authorId": "68f794cdddb78d8147b12b5a",
             "year": 2025,
             "genre": "Software Enginnering",
             "quantity": 67,
