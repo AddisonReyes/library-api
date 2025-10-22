@@ -10,7 +10,7 @@ router.post(url, async (req: Request, res: Response) => {
   try {
     const existingBook = await Book.findOne({ isbn: req.body.isbn });
     if (existingBook) {
-      return res.status(409).json({ message: "ISBN ya existe" });
+      return res.status(409).json({ message: "ISBN already exists" });
     }
 
     const book = new Book(req.body);
