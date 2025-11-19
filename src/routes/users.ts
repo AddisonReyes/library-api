@@ -28,19 +28,29 @@ router.post("/auth/login", async (req: Request, res: Response) => {
 
 router.post("/auth/register", async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
     const user: IUser | null = await User.findOne({ name: name });
     if (user) {
-      res
-        .status(400)
-        .json({ message: "This user already exists.", status: 400 });
+      res.render("pages/register", {
+        error: "This user already exists.",
+        status: 400,
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, hashedPassword, role });
+    const createdAt = new Date();
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      createdAt,
+    });
     newUser.save();
 
-    res.status(201).json({ message: "Registered user ", status: 200 });
+    res.render("pages/login", {
+      message: "Registered user.",
+      status: 200,
+    });
   } catch (error) {
     res.status(400).json({ message: error, status: 400 });
   }

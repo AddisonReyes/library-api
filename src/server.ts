@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import authorsRoutes from "./routes/authors.js";
 import booksRoutes from "./routes/books.js";
 import loansRoutes from "./routes/loans.js";
+import usersRoutes from "./routes/users.js";
 
 dotenv.config();
 
@@ -32,9 +33,18 @@ app.use(express.json());
 app.use("/api", authorsRoutes);
 app.use("/api", booksRoutes);
 app.use("/api", loansRoutes);
+app.use("/", usersRoutes);
+
+app.get("/login", (req: Request, res: Response) => {
+  res.render("pages/login");
+});
+
+app.get("/register", (req: Request, res: Response) => {
+  res.render("pages/register");
+});
 
 app.get("/", (req: Request, res: Response) => {
-  res.render("pages/login", { message: "Hii!" });
+  res.redirect("/login");
 });
 
 app.use(middlewares);
