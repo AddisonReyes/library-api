@@ -1,0 +1,80 @@
+<meta charset="utf-8" />
+<title>Library-API</title>
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css"
+/>
+
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #0b0d10;
+    --muted: rgba(230, 238, 248, 0.6);
+    --accent: #2563eb;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    background: var(--bg);
+    color: #e6eef8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--panel);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(2, 6, 23, 0.6);
+  }
+  .brand {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    color: #fff;
+    text-decoration: none;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  .form-control {
+    background: transparent;
+    color: #e6eef8;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .form-control::placeholder {
+    color: rgba(230, 238, 248, 0.4);
+  }
+  .form-control:focus {
+    box-shadow: none;
+    border-color: rgba(255, 255, 255, 0.18);
+  }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .footer-muted {
+    color: rgba(230, 238, 248, 0.4);
+    font-size: 0.85rem;
+  }
+  a {
+    color: #bcd7ff;
+  }
+  a:hover {
+    color: #e6f0ff;
+    text-decoration: none;
+  }
+</style>
