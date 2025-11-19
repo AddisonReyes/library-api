@@ -1,4 +1,5 @@
 import express, { Response, Request } from "express";
+import verifyToken from "../middlewares/auth.js";
 import Book from "../models/book.js";
 import { Types } from "mongoose";
 
@@ -6,7 +7,7 @@ const router = express.Router();
 const url: string = "/books";
 
 // POST /api/books - Create a book
-router.post(url, async (req: Request, res: Response) => {
+router.post(url, verifyToken, async (req: Request, res: Response) => {
   try {
     const existingBook = await Book.findOne({ isbn: req.body.isbn });
     if (existingBook) {
@@ -26,19 +27,23 @@ router.post(url, async (req: Request, res: Response) => {
 });
 
 // GET /api/books/search?title=...&autorId=... - Search for books
-router.get(url + "/search", async (req: Request, res: Response) => {
-  const { title, authorId } = req.query;
+router.get(
+  url + "/search",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    const { title, authorId } = req.query;
 
-  const query: any = {};
-  if (title) query.title = { $regex: title, $options: "i" };
-  if (authorId) query.authorId = authorId;
-  const book = await Book.find(query);
+    const query: any = {};
+    if (title) query.title = { $regex: title, $options: "i" };
+    if (authorId) query.authorId = authorId;
+    const book = await Book.find(query);
 
-  res.status(200).send(book);
-});
+    res.status(200).send(book);
+  }
+);
 
 // GET /api/books/:id - Get a specific book
-router.get(url + "/:id", async (req: Request, res: Response) => {
+router.get(url + "/:id", verifyToken, async (req: Request, res: Response) => {
   const { id } = req.params;
   if (!Types.ObjectId.isValid(id!)) {
     return res.status(400).json({ message: "ID inválido" });
@@ -57,21 +62,21 @@ router.get(url + "/:id", async (req: Request, res: Response) => {
 });
 
 // GET /api/books - List all books
-router.get(url, async (req: Request, res: Response) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const skip = (page - 1) * limit;
-
-  const books = await Book.find().skip(skip).limit(limit);
-  const total = await Book.countDocuments();
-
-  res
-    .status(200)
-    .json({ books, page, totalPages: Math.ceil(total / limit), total });
+router.get(url, verifyToken, async (req: Request, res: Response) => {
+  try {
+    const books = await Book.find();
+    res.status(200).send(books);
+  } catch (error) {
+    const errorMessage = (error as unknown as Error).message;
+    res.status(400).json({
+      message: "Error fetching books",
+      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+    });
+  }
 });
 
 // PUT /api/books/:id - Update a book
-router.put(url + "/:id", async (req: Request, res: Response) => {
+router.put(url + "/:id", verifyToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id!)) {
@@ -90,22 +95,26 @@ router.put(url + "/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/books/:id - Delete a book
-router.delete(url + "/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!Types.ObjectId.isValid(id!)) {
-      return res.status(400).json({ message: "ID inválido" });
-    }
+router.delete(
+  url + "/:id",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      if (!Types.ObjectId.isValid(id!)) {
+        return res.status(400).json({ message: "ID inválido" });
+      }
 
-    await Book.deleteOne({ _id: id });
-    res.status(204).send();
-  } catch (error) {
-    const errorMessage = (error as unknown as Error).message;
-    res.status(400).json({
-      message: "Error deleting the book",
-      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
-    });
+      await Book.deleteOne({ _id: id });
+      res.status(204).send();
+    } catch (error) {
+      const errorMessage = (error as unknown as Error).message;
+      res.status(400).json({
+        message: "Error deleting the book",
+        error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+      });
+    }
   }
-});
+);
 
 export default router;

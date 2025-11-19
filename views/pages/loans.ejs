@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head'); %>
+  </head>
+  <body class="app-body">
+    <%- include('../partials/header'); %>
+    
+    <div class="main-content">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="mb-1">Loans Management</h2>
+          <p class="muted mb-0">Manage book loans and returns</p>
+        </div>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#addLoanModal">
+          + Create New Loan
+        </button>
+      </div>
+
+      <!-- Active Loans Table -->
+      <div class="card">
+        <div class="card-header">Active Loans</div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Book</th>
+                  <th>Username</th>
+                  <th>Loan Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="loansTableBody">
+                <tr>
+                  <td colspan="5" class="text-center">
+                    <div class="empty-state">
+                      <div class="empty-state-icon">📖</div>
+                      <p>Loading loans...</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Loan Modal -->
+    <div class="modal fade" id="addLoanModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New Loan</h5>
+            <button type="button" class="close" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="addLoanForm">
+              <div class="form-group">
+                <label class="small muted">Book</label>
+                <select class="form-control" id="loanBook" required>
+                  <option value="">Select a book</option>
+                </select>
+                <small class="muted" id="bookAvailability"></small>
+              </div>
+              <div class="form-group">
+                <label class="small muted">Username</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="loanUsername"
+                  placeholder="Enter borrower's name"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="small muted">Loan Date</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="loanDate"
+                  required
+                />
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+              Cancel
+            </button>
+            <button type="button" class="btn btn-primary" onclick="addLoan()">
+              Create Loan
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let allLoans = [];
+      let allBooks = [];
+
+      // Load books for dropdown
+      async function loadBooks() {
+        try {
+          const response = await fetch('/api/books/search');
+          allBooks = await response.json();
+          
+          const select = document.getElementById('loanBook');
+          select.innerHTML = '<option value="">Select a book</option>';
+          
+          allBooks.forEach(book => {
+            const option = document.createElement('option');
+            option.value = book._id;
+            option.textContent = `${book.title} (Available: ${book.quantity})`;
+            option.disabled = book.quantity <= 0;
+            select.appendChild(option);
+          });
+        } catch (error) {
+          console.error('Error loading books:', error);
+        }
+      }
+
+      // Update book availability info
+      document.addEventListener('DOMContentLoaded', () => {
+        const bookSelect = document.getElementById('loanBook');
+        bookSelect.addEventListener('change', (e) => {
+          const bookId = e.target.value;
+          const book = allBooks.find(b => b._id === bookId);
+          const availabilityDiv = document.getElementById('bookAvailability');
+          
+          if (book) {
+            if (book.quantity > 0) {
+              availabilityDiv.innerHTML = `<span class="text-success">✓ ${book.quantity} copies available</span>`;
+            } else {
+              availabilityDiv.innerHTML = `<span class="text-danger">✗ No copies available</span>`;
+            }
+          } else {
+            availabilityDiv.innerHTML = '';
+          }
+        });
+      });
+
+      // Load active loans
+      async function loadLoans() {
+        try {
+          const response = await fetch('/api/loans/active');
+          allLoans = await response.json();
+          displayLoans(allLoans);
+        } catch (error) {
+          console.error('Error loading loans:', error);
+          document.getElementById('loansTableBody').innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center">
+                <div class="empty-state">
+                  <div class="empty-state-icon">⚠️</div>
+                  <p>Error loading loans</p>
+                </div>
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      // Display loans in table
+      function displayLoans(loans) {
+        const tbody = document.getElementById('loansTableBody');
+        
+        if (loans.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="5" class="text-center">
+                <div class="empty-state">
+                  <div class="empty-state-icon">📖</div>
+                  <p>No active loans</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        // Fetch book details for each loan
+        Promise.all(
+          loans.map(async loan => {
+            try {
+              const bookResponse = await fetch(`/api/books/${loan.bookId}`);
+              const book = await bookResponse.json();
+              return { ...loan, book };
+            } catch (error) {
+              return { ...loan, book: { title: 'Unknown' } };
+            }
+          })
+        ).then(loansWithBooks => {
+          tbody.innerHTML = loansWithBooks.map(loan => {
+            const loanDate = new Date(loan.loanDate).toLocaleDateString();
+            const daysSinceLoan = Math.floor(
+              (new Date() - new Date(loan.loanDate)) / (1000 * 60 * 60 * 24)
+            );
+            
+            let statusBadge = '';
+            if (daysSinceLoan > 30) {
+              statusBadge = '<span class="badge badge-danger">Overdue</span>';
+            } else if (daysSinceLoan > 14) {
+              statusBadge = '<span class="badge badge-warning">Due Soon</span>';
+            } else {
+              statusBadge = '<span class="badge badge-success">Active</span>';
+            }
+            
+            return `
+              <tr>
+                <td>${loan.book.title}</td>
+                <td>${loan.username}</td>
+                <td>${loanDate} <small class="muted">(${daysSinceLoan} days ago)</small></td>
+                <td>${statusBadge}</td>
+                <td>
+                  <button class="btn btn-sm btn-success" onclick="returnBook('${loan._id}')">
+                    Return Book
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        });
+      }
+
+      // Add new loan
+      async function addLoan() {
+        const loanData = {
+          bookId: document.getElementById('loanBook').value,
+          username: document.getElementById('loanUsername').value,
+          loanDate: document.getElementById('loanDate').value,
+          returned: false
+        };
+
+        if (!loanData.bookId || !loanData.username || !loanData.loanDate) {
+          alert('Please fill all required fields');
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/loans', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(loanData)
+          });
+
+          if (response.ok) {
+            $('#addLoanModal').modal('hide');
+            document.getElementById('addLoanForm').reset();
+            document.getElementById('bookAvailability').innerHTML = '';
+            loadLoans();
+            loadBooks(); // Refresh book quantities
+          } else {
+            const error = await response.json();
+            alert(error.message || 'Error creating loan');
+          }
+        } catch (error) {
+          console.error('Error creating loan:', error);
+          alert('Error creating loan');
+        }
+      }
+
+      // Return book
+      async function returnBook(loanId) {
+        if (!confirm('Mark this book as returned?')) return;
+
+        try {
+          const response = await fetch(`/api/loans/${loanId}/return`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          if (response.ok) {
+            loadLoans();
+            loadBooks(); // Refresh book quantities
+          } else {
+            const error = await response.json();
+            alert(error.message || 'Error returning book');
+          }
+        } catch (error) {
+          console.error('Error returning book:', error);
+          alert('Error returning book');
+        }
+      }
+
+      // Set today's date as default
+      document.addEventListener('DOMContentLoaded', () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('loanDate').value = today;
+        
+        loadBooks();
+        loadLoans();
+      });
+    </script>
+  </body>
+</html>

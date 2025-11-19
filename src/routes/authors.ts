@@ -1,4 +1,5 @@
 import express, { Response, Request } from "express";
+import verifyToken from "../middlewares/auth.js";
 import Author from "../models/author.js";
 import { Types } from "mongoose";
 
@@ -6,7 +7,7 @@ const router = express.Router();
 const url: string = "/authors";
 
 // POST /api/authors -Create an author
-router.post(url, async (req: Request, res: Response) => {
+router.post(url, verifyToken, async (req: Request, res: Response) => {
   try {
     const author = new Author(req.body);
     await author.save();
@@ -21,7 +22,7 @@ router.post(url, async (req: Request, res: Response) => {
 });
 
 // GET /api/authors/:id - Get a specific author
-router.get(url + "/:id", async (req: Request, res: Response) => {
+router.get(url + "/:id", verifyToken, async (req: Request, res: Response) => {
   const { id } = req.params;
   if (!Types.ObjectId.isValid(id!)) {
     return res.status(400).json({ message: "ID inválido" });
@@ -40,13 +41,13 @@ router.get(url + "/:id", async (req: Request, res: Response) => {
 });
 
 // GET /api/authors - List all the authors
-router.get(url, async (req: Request, res: Response) => {
+router.get(url, verifyToken, async (req: Request, res: Response) => {
   const authors = await Author.find();
   res.status(200).send(authors);
 });
 
 // PUT /api/authors/:id - Update an author
-router.put(url + "/:id", async (req: Request, res: Response) => {
+router.put(url + "/:id", verifyToken, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     if (!Types.ObjectId.isValid(id!)) {
@@ -65,22 +66,26 @@ router.put(url + "/:id", async (req: Request, res: Response) => {
 });
 
 // DELETE /api/authors/:id - Delete an author
-router.delete(url + "/:id", async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    if (!Types.ObjectId.isValid(id!)) {
-      return res.status(400).json({ message: "ID inválido" });
-    }
+router.delete(
+  url + "/:id",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      if (!Types.ObjectId.isValid(id!)) {
+        return res.status(400).json({ message: "ID inválido" });
+      }
 
-    await Author.deleteOne({ _id: id });
-    res.status(204).send();
-  } catch (error) {
-    const errorMessage = (error as unknown as Error).message;
-    res.status(400).json({
-      message: "Error deleting the author",
-      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
-    });
+      await Author.deleteOne({ _id: id });
+      res.status(204).send();
+    } catch (error) {
+      const errorMessage = (error as unknown as Error).message;
+      res.status(400).json({
+        message: "Error deleting the author",
+        error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+      });
+    }
   }
-});
+);
 
 export default router;

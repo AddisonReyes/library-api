@@ -1,5 +1,7 @@
 import express, { NextFunction, Response, Request } from "express";
 import middlewares from "./middlewares/middlewares.js";
+import verifyToken from "./middlewares/auth.js";
+import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
@@ -27,6 +29,7 @@ if (connectionString) {
 app.use(express.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 app.set("views", "./views");
+app.use(cookieParser());
 app.use(express.json());
 
 // Setup routes
@@ -41,6 +44,27 @@ app.get("/login", (req: Request, res: Response) => {
 
 app.get("/register", (req: Request, res: Response) => {
   res.render("pages/register");
+});
+
+app.get("/home", verifyToken, (req: Request, res: Response) => {
+  res.render("pages/home");
+});
+
+app.get("/books", verifyToken, (req: Request, res: Response) => {
+  res.render("pages/books");
+});
+
+app.get("/authors", verifyToken, (req: Request, res: Response) => {
+  res.render("pages/authors");
+});
+
+app.get("/loans", verifyToken, (req: Request, res: Response) => {
+  res.render("pages/loans");
+});
+
+app.get("/logout", (req: Request, res: Response) => {
+  res.clearCookie("token");
+  res.redirect("/login");
 });
 
 app.get("/", (req: Request, res: Response) => {

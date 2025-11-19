@@ -2,17 +2,18 @@ import express, { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers["authorization"];
+  const token = req.cookies.token;
+  
   if (!token) {
-    return res.status(403).send("Token required");
+    return res.redirect("/login");
   }
 
-  jwt.verify(token as string, "secret", (err, decoded) => {
+  jwt.verify(token, "secret", (err: any, decoded: any) => {
     if (err) {
-      return res.status(500).send("Invalid token");
+      return res.redirect("/login");
     }
-
-    req.body.user = (decoded as any).user;
+    // Store user data in a custom property on the request object
+    (req as any).user = decoded;
     next();
   });
 };

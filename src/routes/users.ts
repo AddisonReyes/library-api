@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
+import verifyToken from "../middlewares/auth.js";
 import User, { IUser } from "../models/user.js";
 import { Types } from "mongoose";
-import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import verifyToken from "../middlewares/auth.js";
+import bcrypt from "bcrypt";
 
 const router = express.Router();
 
@@ -16,13 +16,28 @@ router.post("/auth/login", async (req: Request, res: Response) => {
       const validPassword = await bcrypt.compare(password, user.password);
       if (validPassword) {
         const token = jwt.sign({ name }, "secret", { expiresIn: "1h" });
-        res.json({ token });
+
+        res.cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "prod",
+          maxAge: 3600000, // 1h
+        });
+
+        res.redirect("/home");
+      } else {
+        res.render("pages/login", {
+          error: "Wrong user or password.",
+        });
       }
     } else {
-      res.status(404).json({ message: "Wrong user or password.", status: 404 });
+      res.render("pages/login", {
+        error: "Wrong user or password.",
+      });
     }
   } catch (error) {
-    res.status(400).json({ message: error, status: 400 });
+    res.render("pages/login", {
+      error: "An error occurred. Please try again.",
+    });
   }
 });
 
@@ -31,9 +46,8 @@ router.post("/auth/register", async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
     const user: IUser | null = await User.findOne({ name: name });
     if (user) {
-      res.render("pages/register", {
+      return res.render("pages/register", {
         error: "This user already exists.",
-        status: 400,
       });
     }
 
@@ -45,14 +59,16 @@ router.post("/auth/register", async (req: Request, res: Response) => {
       password: hashedPassword,
       createdAt,
     });
-    newUser.save();
+    await newUser.save();
 
     res.render("pages/login", {
       message: "Registered user.",
       status: 200,
     });
   } catch (error) {
-    res.status(400).json({ message: error, status: 400 });
+    res.render("pages/register", {
+      error: "An error occurred during registration. Please try again.",
+    });
   }
 });
 
