@@ -1,6 +1,6 @@
 import express, { NextFunction, Response, Request } from "express";
 import middlewares from "./middlewares/middlewares.js";
-import verifyToken from "./middlewares/auth.js";
+
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
@@ -9,6 +9,7 @@ import authorsRoutes from "./routes/authors.js";
 import booksRoutes from "./routes/books.js";
 import loansRoutes from "./routes/loans.js";
 import usersRoutes from "./routes/users.js";
+import pagesRoutes from "./pages.js";
 
 dotenv.config();
 
@@ -32,44 +33,12 @@ app.set("views", "./views");
 app.use(cookieParser());
 app.use(express.json());
 
-// Setup routes
-app.use("/api", authorsRoutes);
-app.use("/api", booksRoutes);
-app.use("/api", loansRoutes);
+// Setup routes and views
+app.use("/", authorsRoutes);
+app.use("/", booksRoutes);
+app.use("/", loansRoutes);
 app.use("/", usersRoutes);
-
-app.get("/login", (req: Request, res: Response) => {
-  res.render("pages/login");
-});
-
-app.get("/register", (req: Request, res: Response) => {
-  res.render("pages/register");
-});
-
-app.get("/home", verifyToken, (req: Request, res: Response) => {
-  res.render("pages/home");
-});
-
-app.get("/books", verifyToken, (req: Request, res: Response) => {
-  res.render("pages/books");
-});
-
-app.get("/authors", verifyToken, (req: Request, res: Response) => {
-  res.render("pages/authors");
-});
-
-app.get("/loans", verifyToken, (req: Request, res: Response) => {
-  res.render("pages/loans");
-});
-
-app.get("/logout", (req: Request, res: Response) => {
-  res.clearCookie("token");
-  res.redirect("/login");
-});
-
-app.get("/", (req: Request, res: Response) => {
-  res.redirect("/login");
-});
+app.use("/", pagesRoutes);
 
 app.use(middlewares);
 
