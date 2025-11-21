@@ -34,11 +34,10 @@ app.use(cookieParser());
 app.use(express.json());
 
 // Setup routes and views
-app.use("/", authorsRoutes);
-app.use("/", booksRoutes);
-app.use("/", loansRoutes);
+app.use("/api", authorsRoutes);
+app.use("/api", booksRoutes);
+app.use("/api", loansRoutes);
 app.use("/", usersRoutes);
-app.use("/", pagesRoutes);
 
 app.use(middlewares);
 

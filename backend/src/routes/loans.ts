@@ -4,6 +4,7 @@ import Book, { IBook } from "../models/book.js";
 import Loan, { ILoan } from "../models/loan.js";
 import { Types } from "mongoose";
 
+const env: string = process.env.NODE_ENV || "dev";
 const router = express.Router();
 const url: string = "/loans";
 
@@ -23,7 +24,6 @@ router.put(
       if (!loan) {
         return res.status(404).json({
           message: "We can't find this loan, please try again later.",
-          status: 404,
         });
       }
 
@@ -32,19 +32,18 @@ router.put(
         return res.status(404).json({
           message:
             "We do not have this book at the moment, please try again later.",
-          status: 404,
         });
       }
 
       const today = new Date();
       await Book.updateOne({ _id: book._id }, { quantity: book.quantity + 1 });
       await Loan.updateOne({ _id: id }, { returned: true, returnDate: today });
-      res.status(200).send({ message: "200 - Ok", status: 200 });
+      res.status(204).send();
     } catch (error) {
       const errorMessage = (error as unknown as Error).message;
       res.status(400).json({
         message: "Error when returning the book",
-        error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+        error: env === "dev" ? errorMessage : undefined,
       });
     }
   }
@@ -64,7 +63,6 @@ router.post(url, verifyToken, async (req: Request, res: Response) => {
       return res.status(404).json({
         message:
           "We don't have this book at the moment, please try again later.",
-        status: 404,
       });
     }
 
@@ -73,7 +71,6 @@ router.post(url, verifyToken, async (req: Request, res: Response) => {
       return res.status(404).json({
         message:
           "We don't have this book at the moment, please try again later.",
-        status: 404,
       });
     }
 
@@ -87,7 +84,7 @@ router.post(url, verifyToken, async (req: Request, res: Response) => {
     const errorMessage = (error as unknown as Error).message;
     res.status(400).json({
       message: "Error creating a loan",
-      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+      error: env === "dev" ? errorMessage : undefined,
     });
   }
 });

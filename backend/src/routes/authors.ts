@@ -3,6 +3,7 @@ import verifyToken from "../middlewares/auth.js";
 import Author from "../models/author.js";
 import { Types } from "mongoose";
 
+const env: string = process.env.NODE_ENV || "dev";
 const router = express.Router();
 const url: string = "/authors";
 
@@ -16,7 +17,7 @@ router.post(url, verifyToken, async (req: Request, res: Response) => {
     const errorMessage = (error as unknown as Error).message;
     res.status(400).json({
       message: "Error creating the author",
-      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+      error: env === "dev" ? errorMessage : undefined,
     });
   }
 });
@@ -35,7 +36,7 @@ router.get(url + "/:id", verifyToken, async (req: Request, res: Response) => {
     const errorMessage = (error as unknown as Error).message;
     res.status(400).json({
       message: "Error finding the author",
-      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+      error: env === "dev" ? errorMessage : undefined,
     });
   }
 });
@@ -55,12 +56,12 @@ router.put(url + "/:id", verifyToken, async (req: Request, res: Response) => {
     }
 
     await Author.updateOne({ _id: id }, req.body);
-    res.status(200).send({ message: "200 - Ok", status: 200 });
+    res.status(204).send();
   } catch (error) {
     const errorMessage = (error as unknown as Error).message;
     res.status(400).json({
       message: "Error updating the author",
-      error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+      error: env === "dev" ? errorMessage : undefined,
     });
   }
 });
@@ -82,7 +83,7 @@ router.delete(
       const errorMessage = (error as unknown as Error).message;
       res.status(400).json({
         message: "Error deleting the author",
-        error: process.env.NODE_ENV === "dev" ? errorMessage : undefined,
+        error: env === "dev" ? errorMessage : undefined,
       });
     }
   }
