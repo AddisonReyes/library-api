@@ -9,7 +9,6 @@ import authorsRoutes from "./routes/authors.js";
 import booksRoutes from "./routes/books.js";
 import loansRoutes from "./routes/loans.js";
 import usersRoutes from "./routes/users.js";
-import pagesRoutes from "./pages.js";
 
 dotenv.config();
 
@@ -28,8 +27,6 @@ if (connectionString) {
 }
 
 app.use(express.urlencoded({ extended: false }));
-app.set("view engine", "ejs");
-app.set("views", "./views");
 app.use(cookieParser());
 app.use(express.json());
 
@@ -39,9 +36,17 @@ app.use("/api", booksRoutes);
 app.use("/api", loansRoutes);
 app.use("/", usersRoutes);
 
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({ message: "Hi from the server! " });
+});
+
 app.use(middlewares);
 
 // Listen port
 app.listen(port, () => {
-  console.log(`Server running in http://localhost:${port}`);
+  if (env === "dev") {
+    console.log(`Server running in http://localhost:${port}`);
+  } else {
+    console.log(`Server running`);
+  }
 });

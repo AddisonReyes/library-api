@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import verifyToken from "../middlewares/auth.js";
 import User, { IUser } from "../models/user.js";
-import { Types } from "mongoose";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 

@@ -5,12 +5,12 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.redirect("/login");
+    return res.redirect("/");
   }
 
   jwt.verify(token, "secret", (err: any, decoded: any) => {
     if (err) {
-      return res.redirect("/login");
+      return res.redirect("/");
     }
 
     (req as any).user = decoded;
